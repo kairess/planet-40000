@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mt-20 w-full px-4 sm:px-6 lg:px-8">
+    <h2 class="text-2xl font-bold text-white mb-4">Inventory</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for item in inventory %}
+        <div id="item-{{ item.id }}" class="bg-gray-800 bg-opacity-80 p-4 rounded-lg shadow-md">
+            <img src="{{ item.planet_path }}" alt="{{ item.planet_name }}" class="w-full h-auto rounded-md">
+            <p class="text-white mt-2">{{ item.planet_name }}</p>
+            <div class="mt-4 flex justify-end space-x-4">
+                <div class="flex justify-between w-full">
+                    <button class="text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="deleteItem('{{ item.id }}')" aria-label="Drop planet">
+                        <i class="fas fa-trash-alt text-xl"></i>
+                    </button>
+                    <div></div>
+                </div>
+
+                <button class="text-gray-400 hover:text-blue-500 focus:outline-none focus:text-blue-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="changePlanet('{{ item.planet_path }}')" aria-label="Change planet">
+                    <i class="fas fa-exchange-alt text-xl"></i>
+                </button>
+                <button id="sell-button-{{ item.id }}" class="text-gray-400 hover:text-green-500 focus:outline-none focus:text-green-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="sellItem('{{ item.id }}')" aria-label="Sell planet" {% if item.status == 'selling' %}style="display: none;"{% endif %}>
+                    <i class="fas fa-tag text-xl"></i>
+                </button>
+                <button id="cancel-sell-button-{{ item.id }}" class="text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="cancelSellItem('{{ item.id }}')" aria-label="Cancel sell planet" {% if item.status == 'inventory' %}style="display: none;"{% endif %}>
+                    <i class="fas fa-minus text-xl"></i>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function changePlanet(planetPath) {
+    fetch('/change_planet', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ planet_path: planetPath })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire('Success', 'Planet changed successfully.', 'success');
+        } else {
+            Swal.fire('Error', 'Failed to change planet.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'An error occurred.', 'error');
+    });
+}
+
+function deleteItem(itemId) {
+    Swal.fire({
+        title: 'Are you sure you want to delete this planet?',
+        text: "You won't be able to revert this! You will get 10 coins back.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch('/delete_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_id: itemId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Success', 'Planet deleted successfully.', 'success');
+                    document.getElementById('money').textContent = data.money;
+                    document.getElementById('item-' + itemId).remove();
+                } else {
+                    Swal.fire('Error', 'Failed to delete planet.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'An error occurred.', 'error');
+            });
+        }
+    });
+}
+
+function sellItem(itemId) {
+    Swal.fire({
+        title: 'Enter selling price',
+        input: 'number',
+        inputAttributes: {
+            min: 1,
+            step: 1
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Sell',
+        cancelButtonText: 'Cancel',
+        inputValidator: (value) => {
+            if (!value || value <= 0 || !Number.isInteger(Number(value))) {
+                return 'Please enter a valid positive integer.';
+            }
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const price = parseInt(result.value);
+
+            fetch('/sell_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ item_id: itemId, price: price })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    Swal.fire('Success', 'Planet registered successfully.', 'success');
+                    document.getElementById('sell-button-' + itemId).style.display = 'none';
+                    document.getElementById('cancel-sell-button-' + itemId).style.display = 'block';
+                    document.getElementById('money').textContent = data.money;
+                } else {
+                    Swal.fire('Error', 'Failed to register planet.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error', 'An error occurred.', 'error');
+            });
+        }
+    });
+}
+
+function cancelSellItem(itemId) {
+    fetch('/cancel_sell_item', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ item_id: itemId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            Swal.fire('Success', 'Planet registration canceled successfully.', 'success');
+            document.getElementById('sell-button-' + itemId).style.display = 'block';
+            document.getElementById('cancel-sell-button-' + itemId).style.display = 'none';
+        } else {
+            Swal.fire('Error', 'Failed to cancel planet registration.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'An error occurred.', 'error');
+    });
+}
+</script>
+{% endblock %}
+

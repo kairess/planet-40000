@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="text-center mt-20 w-full px-4 sm:px-6 lg:px-8">
+    <h2 class="text-2xl font-bold text-white mb-4">Shop</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% for item in selling_items %}
+        <div id="item-{{ item.id }}" class="bg-gray-800 bg-opacity-80 p-4 rounded-lg shadow-md">
+            <img src="{{ item.planet_path }}" alt="{{ item.planet_name }}" class="w-full h-auto rounded-md">
+
+            <div class="mt-2">
+                <p class="text-white text-sm">{{ item.planet_name }}</p>
+                <p class="text-gray-400 text-sm"><i class="fas fa-coins mr-1"></i>{{ item.price }}</p>
+            </div>
+
+            <button class="buy-button mt-4 w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out" data-item-id="{{ item.id }}" data-price="{{ item.price }}">
+                Buy
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('.buy-button').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: 'Are you sure you want to buy this planet?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, buy it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const itemId = button.getAttribute('data-item-id');
+
+                    fetch('/buy_item', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ item_id: itemId })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            Swal.fire('Success', 'Planet bought successfully.', 'success');
+                            button.disabled = true;
+                            button.textContent = 'Bought';
+                            button.classList.add('opacity-50', 'cursor-not-allowed');
+                            button.classList.remove('bg-blue-500', 'text-white', 'hover:bg-blue-600');
+                            document.getElementById('money').textContent = data.money;
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'An error occurred.', 'error');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
