@@ -55,8 +55,8 @@ def change_planet():
 
     return jsonify({'status': 'success', 'planet_id': planet_id, 'message': 'Planet changed successfully'})
 
-@app.route('/shop')
-def shop():
+@app.route('/marketplace')
+def marketplace():
     if 'steam_id' not in session:
         return redirect(url_for('account.login'))
     
@@ -65,7 +65,7 @@ def shop():
     cursor.execute('SELECT * FROM inventories JOIN planets ON inventories.planet_id = planets.id WHERE status = ? AND steam_id != ? ORDER BY updated_at DESC', ('selling', session['steam_id']))
     selling_items = cursor.fetchall()
     
-    return render_template('shop.html', selling_items=selling_items)
+    return render_template('marketplace.html', selling_items=selling_items)
 
 @app.route('/buy_item', methods=['POST'])
 def buy_item():
