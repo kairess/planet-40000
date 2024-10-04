@@ -39,6 +39,17 @@ def create_tables(cursor):
     )
     ''')
 
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS planets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        path TEXT,
+        info TEXT,
+        probability INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     conn.commit()
 
 @app.teardown_appcontext

@@ -4,7 +4,10 @@
 <p class="text-2xl text-white mb-8">
     <span id="counter" class="font-bold">0</span>
 </p>
-<img src="{{ current_planet }}" alt="planet" id="planet" class="w-64 h-64 rounded-full cursor-pointer hover:scale-105 transition duration-200">
+<div class="relative">
+    <img src="{{ current_planet }}" alt="planet" id="planet" class="w-64 h-64 rounded-full cursor-pointer hover:scale-105 transition duration-200">
+    <button id="infoButton" class="absolute top-0 right-0 bg-gray-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-600">!</button>
+</div>
 <p class="text-xl text-white mt-4">Next Drop <span id="timer" class="font-bold">01:00:00</span></p>
 {% endblock %}
 
@@ -174,5 +177,80 @@
     }
 
     let timerInterval = setInterval(updateTimer, 1000);
+
+    // Planet Info
+    const userLanguage = navigator.language || navigator.userLanguage;
+    const isKorean = userLanguage.startsWith('ko');
+    const language = isKorean ? 'ko' : 'en';
+
+    let planetInfo = {
+        "en": {
+            "name": "Verdant Stripe",
+            "diameter": "139,820 km",
+            "mass": "1.898 × 10^27 kg",
+            "orbitalPeriod": "4,380 Earth days",
+            "rotationPeriod": "9 hours",
+            "averageTemp": "-145°C (-229°F)",
+            "composition": "Primarily hydrogen and helium",
+            "atmosphere": "Thick atmosphere with ammonia, methane, and water vapor",
+            "features": "Distinct green and pink banded appearance",
+            "greenSpot": "Great Green Spot - a massive storm system in the upper atmosphere",
+            "moons": "79 known moons",
+            "planetType": "Gas Giant",
+            "lifeChance": "Potential for microbial life in upper atmosphere layers",
+            "funFact": "The unique coloration is believed to be caused by unknown compounds in the upper atmosphere, possibly organic in nature."
+        },
+        "ko": {
+            "name": "버던트 스트라이프",
+            "diameter": "139,820 km",
+            "mass": "1.898 × 10^27 kg",
+            "orbitalPeriod": "4,380 지구일",
+            "rotationPeriod": "9 시간",
+            "averageTemp": "-145°C",
+            "composition": "주로 수소와 헬륨",
+            "atmosphere": "암모니아, 메탄, 수증기가 포함된 두꺼운 대기층",
+            "features": "뚜렷한 초록색과 분홍색 띠 모양의 외관",
+            "greenSpot": "대초록반점 - 상층 대기의 거대한 폭풍 시스템",
+            "moons": "79개의 알려진 위성",
+            "planetType": "가스 거대 행성",
+            "lifeChance": "상층 대기에서 미생물 형태의 생명체 존재 가능성",
+            "funFact": "독특한 색상은 상층 대기에 있는 미지의 화합물, 아마도 유기물질에 의해 생겨난 것으로 추정됩니다."
+        }
+    };
+
+    const infoButton = document.getElementById('infoButton');
+    infoButton.addEventListener('click', () => {
+        Swal.fire({
+            title: planetInfo[language].name,
+            html: `
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '기본 정보' : 'Basic Information'}:</h3>
+                <p>${isKorean ? '지름' : 'Diameter'}: ${planetInfo[language].diameter}</p>
+                <p>${isKorean ? '질량' : 'Mass'}: ${planetInfo[language].mass}</p>
+                <p>${isKorean ? '공전 주기' : 'Orbital Period'}: ${planetInfo[language].orbitalPeriod}</p>
+                <p>${isKorean ? '자전 주기' : 'Rotation Period'}: ${planetInfo[language].rotationPeriod}</p>
+                <p>${isKorean ? '평균 온도' : 'Average Temperature'}: ${planetInfo[language].averageTemp}</p>
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '구성 요소' : 'Composition'}:</h3>
+                <p>${planetInfo[language].composition}</p>
+                <p>${planetInfo[language].atmosphere}</p>
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '주요 특징' : 'Notable Features'}:</h3>
+                <p>${planetInfo[language].features}</p>
+                <p>${planetInfo[language].greenSpot}</p>
+                <p>${planetInfo[language].moons}</p>
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '행성 유형' : 'Planet Type'}:</h3>
+                <p>${planetInfo[language].planetType}</p>
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '생명체 존재 가능성' : 'Possibility of Life'}:</h3>
+                <p>${planetInfo[language].lifeChance}</p>
+                <h3 class="text-md font-semibold mt-4">${isKorean ? '흥미로운 사실' : 'Interesting Fact'}:</h3>
+                <p>${planetInfo[language].funFact}</p>
+            `,
+            imageUrl: '{{ current_planet }}',
+            imageWidth: 200,
+            imageHeight: 200,
+            confirmButtonText: isKorean ? '닫기' : 'Close',
+            customClass: {
+                container: 'planet-info-popup'
+            }
+        });
+    });
 </script>
 {% endblock %}
