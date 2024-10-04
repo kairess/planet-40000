@@ -112,6 +112,9 @@ def sell_item():
     item_id = request.json['item_id']
     price = int(request.json['price'])
 
+    if price < 1:
+        return jsonify({'status': 'error', 'message': 'Price must be greater than 0'})
+
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('SELECT * FROM inventories WHERE id = ? AND steam_id = ?', (item_id, session['steam_id']))

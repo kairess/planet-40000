@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>{% block title %}Planet 40000{% endblock %}</title>
+
+    <meta name="title" content="Planet 40000">
+    <meta name="description" content="Planet 40000 is a cosmic clicking game where tap on celestial bodies! Click on planets to discover and collect even more planets across the universe!">
+    <meta name="keywords" content="Planet 40000, Planet Clicker, space game, cosmic clicker, celestial bodies, galaxy explorer, planet collection, universe simulator, idle space game, planetary discovery, astronomical clicker, cosmic idle, solar system game, interstellar tapper, space exploration game, planetary conquest, cosmic collector, galactic adventure, astronomy game, space idle, stellar clicker">
+    <meta name="robots" content="index, follow">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="author" content="빵형의 개발도상국">
+
+    <meta property="og:title" content="Planet 40000">
+    <meta property="og:description" content="Planet 40000 is a cosmic clicking game where tap on celestial bodies! Click on planets to discover and collect even more planets across the universe!">
+    <meta property="og:image" content="/static/og-image.webp">
+    <meta property="og:url" content="https://planet40000.m47rix.com">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="Planet 40000">
+    <meta property="twitter:description" content="Planet 40000 is a cosmic clicking game where tap on celestial bodies! Click on planets to discover and collect even more planets across the universe!">
+    <meta property="twitter:image" content="/static/og-image.webp">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -27,7 +46,7 @@
             <li><a href="/shop" class="hover:text-blue-300 transition">Shop</a></li>
             {% if 'steam_id' in session %}
             <li><a href="/logout" class="hover:text-blue-300 transition">Logout</a></li>
-            <li class="ml-4"><span class="text-yellow-400"><i class="fas fa-coins mr-1"></i><span id="money">{{ money }}</span></span></li>
+            <li class="ml-4"><span class="text-yellow-400"><i class="fas fa-coins mr-1"></i><span id="money">{{ "{:,}".format(money) }}</span></span></li>
             {% else %}
             <li><a href="/login" class="hover:text-blue-300 transition">Login</a></li>
             {% endif %}
