@@ -21,7 +21,7 @@ def create_tables(cursor):
         login_count INTEGER DEFAULT 1,
         last_login DATETIME DEFAULT CURRENT_TIMESTAMP,
         money INTEGER DEFAULT 100,
-        current_planet TEXT DEFAULT '/static/planets/Earth_50.png',
+        current_planet_id INTEGER DEFAULT 225,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
     ''')
@@ -30,8 +30,7 @@ def create_tables(cursor):
     CREATE TABLE IF NOT EXISTS inventories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         steam_id TEXT,
-        planet_name TEXT,
-        planet_path TEXT,
+        planet_id INTEGER,
         price INTEGER DEFAULT 0,
         status TEXT DEFAULT 'inventory',
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,

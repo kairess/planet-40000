@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, session, redirect, url_for, request
 from account import account_bp
-import os, glob, random
+import os, glob, random, json
 from db import get_db
 
 app = Flask(__name__)
@@ -25,11 +25,18 @@ def index():
     if 'steam_id' in session:
         conn = get_db()
         cursor = conn.cursor()
-        cursor.execute('SELECT current_planet FROM users WHERE steam_id = ?', (session['steam_id'],))
+        cursor.execute('SELECT current_planet_id FROM users WHERE steam_id = ?', (session['steam_id'],))
         result = cursor.fetchone()
-        current_planet = result[0] if result else '/static/planets/Earth_50.png'
+        current_planet_id = result['current_planet_id'] if result else 225
     else:
-        current_planet = '/static/planets/Earth_50.png'
+        current_planet_id = 225
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM planets WHERE id = ?', (current_planet_id,))
+    current_planet = cursor.fetchone()
+    current_planet = dict(current_planet)
+    current_planet['info'] = json.loads(current_planet['info'])
 
     return render_template('index.html', current_planet=current_planet)
 
@@ -39,14 +46,14 @@ def change_planet():
     if 'steam_id' not in session:
         return redirect(url_for('account.login'))
 
-    planet_path = request.json['planet_path']
+    planet_id = request.json['planet_id']
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('UPDATE users SET current_planet = ? WHERE steam_id = ?', (planet_path, session['steam_id']))
+    cursor.execute('UPDATE users SET current_planet_id = ? WHERE steam_id = ?', (planet_id, session['steam_id']))
     conn.commit()
 
-    return jsonify({'status': 'success', 'planet_path': planet_path, 'message': 'Planet changed successfully'})
+    return jsonify({'status': 'success', 'planet_id': planet_id, 'message': 'Planet changed successfully'})
 
 @app.route('/shop')
 def shop():
@@ -55,7 +62,7 @@ def shop():
     
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM inventories WHERE status = ? AND steam_id != ? ORDER BY updated_at DESC', ('selling', session['steam_id']))
+    cursor.execute('SELECT * FROM inventories JOIN planets ON inventories.planet_id = planets.id WHERE status = ? AND steam_id != ? ORDER BY updated_at DESC', ('selling', session['steam_id']))
     selling_items = cursor.fetchall()
     
     return render_template('shop.html', selling_items=selling_items)
@@ -93,7 +100,7 @@ def inventory():
 
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM inventories WHERE steam_id = ? ORDER BY created_at DESC', (session['steam_id'],))
+    cursor.execute('SELECT * FROM inventories JOIN planets ON inventories.planet_id = planets.id WHERE steam_id = ? ORDER BY created_at DESC', (session['steam_id'],))
     inventory = cursor.fetchall()
     return render_template('inventory.html', inventory=inventory)
 
@@ -152,30 +159,23 @@ def drop_planet():
     if 'steam_id' not in session:
         return jsonify({'status': 'error', 'message': 'Not logged in'})
 
-    planets = []
-
-    for planet_path in glob.glob('static/planets/*.png'):
-        planet_info = os.path.splitext(os.path.basename(planet_path))[0]
-        planet_name = planet_info.split('_')[0]
-        planet_probability = planet_info.split('_')[1]
-
-        planets.append({
-            'planet_path': planet_path,
-            'planet_name': planet_name,
-            'probability': float(planet_probability)
-        })
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM planets')
+    planets = cursor.fetchall()
 
     random_planet = random.choices(planets, weights=[planet['probability'] for planet in planets])[0]
 
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO inventories (steam_id, planet_name, planet_path) VALUES (?, ?, ?)
-    ''', (session['steam_id'], random_planet['planet_name'], f'/{random_planet["planet_path"]}'))
+    INSERT INTO inventories (steam_id, planet_id) VALUES (?, ?)
+    ''', (session['steam_id'], random_planet['id']))
     conn.commit()
     last_id = cursor.lastrowid
 
-    random_planet['id'] = last_id
+    random_planet = dict(random_planet)
+    random_planet['last_id'] = last_id
 
     return jsonify({'status': 'success', 'planet': random_planet})
 

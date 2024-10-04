@@ -6,8 +6,8 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {% for item in inventory %}
         <div id="item-{{ item.id }}" class="bg-gray-800 bg-opacity-80 p-4 rounded-lg shadow-md">
-            <img src="{{ item.planet_path }}" alt="{{ item.planet_name }}" class="w-full h-auto rounded-md">
-            <p class="text-white mt-2">{{ item.planet_name }}</p>
+            <img src="{{ item.path }}" alt="{{ item.name }}" class="w-full h-auto rounded-md">
+            <p class="text-white mt-2">{{ item.name }}</p>
             <div class="mt-4 flex justify-end space-x-4">
                 <div class="flex justify-between w-full">
                     <button class="text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="deleteItem('{{ item.id }}')" aria-label="Drop planet">
@@ -16,7 +16,7 @@
                     <div></div>
                 </div>
 
-                <button class="text-gray-400 hover:text-blue-500 focus:outline-none focus:text-blue-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="changePlanet('{{ item.planet_path }}')" aria-label="Change planet">
+                <button class="text-gray-400 hover:text-blue-500 focus:outline-none focus:text-blue-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="changePlanet('{{ item.planet_id }}')" aria-label="Change planet">
                     <i class="fas fa-exchange-alt text-xl"></i>
                 </button>
                 <button id="sell-button-{{ item.id }}" class="text-gray-400 hover:text-green-500 focus:outline-none focus:text-green-500 transition duration-300 ease-in-out transform hover:scale-110" onclick="sellItem('{{ item.id }}')" aria-label="Sell planet" {% if item.status == 'selling' %}style="display: none;"{% endif %}>
@@ -34,13 +34,13 @@
 
 {% block scripts %}
 <script>
-function changePlanet(planetPath) {
+function changePlanet(planetId) {
     fetch('/change_planet', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ planet_path: planetPath })
+        body: JSON.stringify({ planet_id: planetId })
     })
     .then(response => response.json())
     .then(data => {

@@ -6,10 +6,10 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {% for item in selling_items %}
         <div id="item-{{ item.id }}" class="bg-gray-800 bg-opacity-80 p-4 rounded-lg shadow-md">
-            <img src="{{ item.planet_path }}" alt="{{ item.planet_name }}" class="w-full h-auto rounded-md">
+            <img src="{{ item.path }}" alt="{{ item.name }}" class="w-full h-auto rounded-md">
 
             <div class="mt-2">
-                <p class="text-white text-sm">{{ item.planet_name }}</p>
+                <p class="text-white text-sm">{{ item.name }}</p>
                 <p class="text-gray-400 text-sm"><i class="fas fa-coins mr-1"></i>{{ item.price }}</p>
             </div>
 
